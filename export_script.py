@@ -23,7 +23,7 @@ if __name__ == "__main__":
     #Step 3: Get latest data for all devices
 
     ## Specify the time period
-    START_TIME = "2020-10-22T23:03:49.735Z"
+    START_TIME = "2020-01-22T23:03:49.735Z"
     END_TIME ="2020-10-29T23:03:49.735Z"
 
     ## Will only include devices from this location name
@@ -50,10 +50,9 @@ if __name__ == "__main__":
         device_name = device['segment']['name']
 
         #Get Device sample data and store in CSV
-        res = cloudConnection.getDeviceSamples(device_id, START_TIME, END_TIME)
-        df = pd.DataFrame(res)
+        df = cloudConnection.getDeviceSamples(device_id, START_TIME, END_TIME)
 
-        if not res or df.empty:
+        if df.empty:
             #No data for device, we skip it
             continue
         

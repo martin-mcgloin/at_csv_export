@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import time
 import logging
 import logging.config
+import pandas as pd
 
 class AirthingsCloud:
     base_url = "https://ext-api.airthings.com/v1"
@@ -51,16 +52,23 @@ class AirthingsCloud:
             data = response['devices']
             return data
 
-
-    def getDeviceSamples(self, sn, start=None, end=None):
+    def getDeviceSamples(self, sn, start=None, end=None, cursor=None):
         path =  "/devices/" + str(sn)+ "/samples"
         params = {
             "start": start,
             "end": end,
+            "cursor": cursor
         }
         self.logger.info("Getting latest samples for " + str(sn))       
         response = self._sendRequest(path, params=params)
-    
+
         if response:
-            data = response['data']
+            data = pd.DataFrame(response['data'])
+            #Check if we have to paginate - more data remaining
+            if "cursor" in response:
+                #Concatenate the data for each page
+                next_data = self.getDeviceSamples(sn, start, end, response["cursor"])
+                data = pd.concat([data, next_data]) 
+            else:
+                self.logger.info("End of page - no additional cursor found for {}.".format(sn))
             return data
